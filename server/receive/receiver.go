@@ -36,6 +36,8 @@ func ReceiverServer(){
 	var newFile fileHandling.File
 	fileMap := make(map[int] int)
 	remainChunks := make(map[int] int)
+	currentWindow := make(map[int] struct{})
+	duplicatePackets :=0
 	for {
 		n, _, err := conn.ReadFromUDP(buffer)
 		if err != nil {
@@ -55,7 +57,7 @@ func ReceiverServer(){
 			for i:=0 ; i< newFile.Metadata.TotalChunks ; i++ {
 				remainChunks[i] = 1
 			}
-			go RequestFile(newFile.Metadata,&fileMap,&remainChunks,&mu)
+			go RequestFile(newFile.Metadata,currentWindow,&mu)
 		}
 		if(msg.Type =="file-chunk"){
 			
@@ -64,8 +66,11 @@ func ReceiverServer(){
 				fmt.Println("Error decoding base64 data:", err)
 				continue
 			}
-			go newFile.WriteChunkData(decodedData,msg.ChunkIndex,&mu,&fileMap,&remainChunks)
+			fileMap[msg.ChunkIndex] = 1
+			// fmt.Println("the chunk number recieved is : ",msg.ChunkIndex  )
+			// fmt.Println("the total chunks recieved are : ",len(fileMap)  )
+			newFile.WriteChunkData(decodedData,msg.ChunkIndex,&mu,currentWindow,&duplicatePackets)
 		}
-		fmt.Println(len(fileMap))
+		// fmt.Println(len(fileMap),"the duplicate are ",duplicatePackets)
 	}
 }

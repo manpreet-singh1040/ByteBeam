@@ -59,9 +59,9 @@ func (f *File) Initialize(address string) {
 	}
 	f.Metadata = Metadata
 	fmt.Println("the file meta data is ",Metadata)
-	f.FilePool = make( chan *os.File ,4)
+	f.FilePool = make( chan *os.File ,128)
 	file.Close()
-	for i:=0 ; i<4;i++  {
+	for i:=0 ; i<128;i++  {
 		tempFile, err := os.OpenFile(address, os.O_RDWR, 0644)
 		if err!=nil {
 			fmt.Println("error in opening the file")
@@ -72,16 +72,15 @@ func (f *File) Initialize(address string) {
 	// defer file.Close()
 }
 
-func (f *File) ReadAndSendChunk(curretChunk int , conn *net.UDPConn, addr *net.UDPAddr) {
-		newConn , err := net.DialUDP("udp", nil, addr)
-		if err != nil {
-			fmt.Println("error in dialing the udp")
-			// panic(err)
-			log.Print(err)
-		}
-		defer newConn.Close()
+func (f *File) ReadAndSendChunk(curretChunk int , conn *net.UDPConn, addr *net.UDPAddr,tempFile *os.File) {
+
 		var offset int64
 		var buffer []byte
+		// tempFile, err := os.OpenFile("D:\\phone camera\\freasher vid\\VID_20230116_073608.mp4", os.O_RDWR, 0644)
+		// if err!=nil {
+		// 	fmt.Println("error in opening the file")
+		// 	// panic(err)
+		// }
 		if curretChunk == f.Metadata.TotalChunks-1 {
 			// Last chunk: calculate offset and buffer size for remaining bytes
 			offset = int64(curretChunk) * int64(f.Metadata.ChunkSize)
@@ -92,20 +91,27 @@ func (f *File) ReadAndSendChunk(curretChunk int , conn *net.UDPConn, addr *net.U
 				offset = int64(curretChunk) * int64(f.Metadata.ChunkSize)
 				buffer = make([]byte, f.Metadata.ChunkSize)
 			}
-			FilePointer, ok := f.TryAcquire()
-			if !ok {
-				fmt.Println("error in acquiring the file pointer")
-				// panic(err)
-				return
-			}
-			_, err = FilePointer.Seek(offset, 0)
+			// FilePointer, ok := f.TryAcquire()
+			// if !ok {
+			// 	fmt.Println("error in acquiring the file pointer")
+			// 	// panic(err)
+			// 	return
+			// }
+			FilePointer := tempFile
+			// _, err = FilePointer.Seek(offset, 0)
+			// if err != nil {
+			// 	fmt.Println("error in seeking to chunk offset")
+			// 	// panic(err)
+			// 	fmt.Println(err)
+			// 	fmt.Println(offset)
+			// }
+			// n, err := FilePointer.Read(buffer)
+			n,err := FilePointer.ReadAt(buffer, offset)
 			if err != nil {
-				fmt.Println("error in seeking to chunk offset")
-				// panic(err)
+				fmt.Println("error in reading the file")
+				log.Print(err)
 				fmt.Println(err)
-				fmt.Println(offset)
 			}
-			n, err := FilePointer.Read(buffer)
 			if err != nil {
 				// fmt.Println("error in reading the file")
 				// log.Print(err)
@@ -124,9 +130,9 @@ func (f *File) ReadAndSendChunk(curretChunk int , conn *net.UDPConn, addr *net.U
 			fmt.Println("error in marshaling json")
 			panic(err)
 		}
-		newConn.Write(jsonData)
-		f.FilePool <- FilePointer
-		// fmt.Printf("Sent chunk %d/%d\n", curretChunk, f.Metadata.TotalChunks)
+		conn.Write(jsonData)
+		// f.FilePool <- FilePointer
+		// fmt.Printf("Sent chunk %d\n", curretChunk)
 }
 
 
