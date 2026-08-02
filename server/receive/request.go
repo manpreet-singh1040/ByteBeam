@@ -10,7 +10,7 @@ import (
 	"github.com/manpreet-singh1040/ByteBeam/server/fileHandling"
 )
 
-func RequestFile(newFileMetadata fileHandling.Metadata , currentWindow map[int] struct{}, mu *sync.Mutex) {
+func RequestFile(newFileMetadata fileHandling.Metadata , currentWindow map[int] struct{}, mu *sync.Mutex,senderIp string) {
 	// fmt.Println("Requesting file from server... total chunks:", newFileMetadata.TotalChunks)
 	// addr := net.UDPAddr{
 	// 	Port: 3000,
@@ -58,14 +58,14 @@ func RequestFile(newFileMetadata fileHandling.Metadata , currentWindow map[int] 
 	// 	RequestFilePart(newFileMetadata , i , endIdx , currentWindow , mu)
 	// }
 	start := time.Now()
-	RequestFilePart(newFileMetadata , 0 , newFileMetadata.TotalChunks-1 , currentWindow , mu)
+	RequestFilePart(newFileMetadata , 0 , newFileMetadata.TotalChunks-1 , currentWindow , mu, senderIp)
 	end := time.Since(start)
 	fmt.Printf("File transfer completed in %s. All chunks received. \n", end)
 	fmt.Println("File transfer completed. All chunks received. ", len(currentWindow), "chunks received  total chunks ", newFileMetadata.TotalChunks)
 
 }
 
-func RequestFilePart(newFileMetadata fileHandling.Metadata , startIdx int , endIdx int,currentWindow map[int]struct{}, mu *sync.Mutex) {
+func RequestFilePart(newFileMetadata fileHandling.Metadata , startIdx int , endIdx int,currentWindow map[int]struct{}, mu *sync.Mutex,senderIp string) {
 	// currentWindow := make(map[int] int)
 	// for n < Size {
 	// 	for n < Size && len(currentWindow) < windowSize {
@@ -108,7 +108,7 @@ func RequestFilePart(newFileMetadata fileHandling.Metadata , startIdx int , endI
 	
 	addr := net.UDPAddr{
 		Port: 3000,
-		IP:   net.ParseIP("0.0.0.0"),
+		IP:   net.ParseIP(senderIp),
 	}
 	conn , err := net.DialUDP("udp", nil, &addr)
 	if err != nil {

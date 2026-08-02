@@ -2,33 +2,14 @@ package main
 
 import(
 	"fmt"
-	"net"
+	// "net"
 )
 
 func main(){
-	addr := ":8080"
-	udpAddr,err := net.ResolveUDPAddr("udp",addr)
-	if(err !=nil){
-		fmt.Println("error in resolvinf the udp adderss");
-		panic(err)
-	}
-	conn,err := net.ListenUDP("udp",udpAddr)
-	if(err!=nil){
-		panic(err)
-	}
-	defer conn.Close()
+	fmt.Println("-------------------Hello and Welcome to BYTEBEAM--------------------")
+	fmt.Println("if you want to share the file press 1 and if you want to recieve the file press 2")
+	var choice int
+	fmt.Scan(&choice)
 
-	fmt.Println("hey bud nice work")
-	buf := make( []byte,1024 )
-	fmt.Println("UDP server listening on", addr)
-
-	for{
-		n,clientAddr,err := conn.ReadFromUDP(buf)
-		if(err !=nil){
-			fmt.Println("Error reading:", err)
-			continue
-		}
-		fmt.Printf("Received from %s: %s\n", clientAddr, string(buf[:n]))
-	}
 
 }

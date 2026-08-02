@@ -9,6 +9,7 @@ import (
 	"os"
 )
 type Metadata struct{
+	Path string
 	Name string
 	Size int64
 	Type string
@@ -39,6 +40,7 @@ func (f *File) TryAcquire() (*os.File, bool) {
 
 func (f *File) Initialize(address string) {
 	fmt.Println("hello from file handling package")
+	fmt.Println("the address is ",address)
 	file,err := os.Open(address)
 	if err!=nil {
 		fmt.Println("error in opening the file")
@@ -51,6 +53,7 @@ func (f *File) Initialize(address string) {
 		panic(err)
 	}
 	Metadata := Metadata{
+		Path: address,
 		Name: fileInfo.Name(),
 		Size: fileInfo.Size(),
 		Type: "txt",

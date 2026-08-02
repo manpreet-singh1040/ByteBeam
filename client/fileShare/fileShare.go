@@ -5,19 +5,30 @@ import(
 	_"time"
 	"os"
 	"encoding/json"
-	"github.com/manpreet-singh1040/ByteBeam/client/encoding"
+	// "github.com/manpreet-singh1040/ByteBeam/client/encoding"
 	"github.com/manpreet-singh1040/ByteBeam/client/fileHandling"
 )
 
-func FileShare(){
+func FileShare(senderIp string , filePathToSend string){
 	fmt.Println("hello from file share package")
 	fmt.Println("hey bud nice work")
-	conn, _ := net.Dial("udp", "0.0.0.0:8080")
-	encoding.Encoding()
+	fmt.Println(filePathToSend)
+	addr := net.UDPAddr{
+		Port: 8080,
+		IP:   net.ParseIP(senderIp),
+	}
+	conn , err := net.DialUDP("udp", nil, &addr)
+	if err != nil {
+		fmt.Println("error in dialing the udp")
+		panic(err)
+	}
+	// encoding.Encoding()
 	defer conn.Close()
 	// address:= "D:\\phone camera\\freasher vid\\VID_20230116_073608.mp4"
-	address:= "D:\\series\\friends\\Season 4\\F.R.I.E.N.D.S S4-E8 The One with Chandler In a Box 720p.mkv"
+	// address:= "D:\\series\\friends\\Season 4\\F.R.I.E.N.D.S S4-E8 The One with Chandler In a Box 720p.mkv"
 	// address := "D:\\phone camera\\freasher vid\\VID_20221220_093101.mp4"
+
+	address := filePathToSend
 	File := fileHandling.File{}
 	File.Initialize(address)
 	mess := fileHandling.Message{
@@ -30,10 +41,10 @@ func FileShare(){
 		return
 	}
 	conn.Write(jsonData)
-	ListeningServer(File)
+	ListeningServer(File,senderIp)
 }	
 
-func ListeningServer(File fileHandling.File){
+func ListeningServer(File fileHandling.File, senderIp string){
 	fmt.Println("hello from listening server")
 	addr := net.UDPAddr{
 		Port: 3000,
@@ -50,13 +61,17 @@ func ListeningServer(File fileHandling.File){
 	toalReq := make(map[int] struct{})
 	buffer := make([]byte, 65535)
 	fmt.Println("the total chunks are ",File.Metadata.TotalChunks)
-	tempFile, err := os.OpenFile("D:\\series\\friends\\Season 4\\F.R.I.E.N.D.S S4-E8 The One with Chandler In a Box 720p.mkv", os.O_RDWR, 0644)
+	tempFile, err := os.OpenFile(File.Metadata.Path, os.O_RDWR, 0644)
 	if err!=nil {
 		fmt.Println("error in opening the file")
 		// panic(err)
 	}
-	newAddr,_ :=net.ResolveUDPAddr("udp", "0.0.0.0:8080")
-	newConn , err := net.DialUDP("udp", nil, newAddr)
+	newAddr := net.UDPAddr{
+		Port: 8080,
+		IP:   net.ParseIP(senderIp),
+	}
+
+	newConn , err := net.DialUDP("udp", nil, &newAddr)
 	if err != nil {
 		fmt.Println("error in dialing the udp")
 		// panic(err)
@@ -86,7 +101,7 @@ func ListeningServer(File fileHandling.File){
 			// start := time.Now()
 			if msg.ChunkIndex != -1{
 				toalReq[msg.ChunkIndex] = struct{}{}
-				go File.ReadAndSendChunk(msg.ChunkIndex, newConn, newAddr,tempFile)
+				go File.ReadAndSendChunk(msg.ChunkIndex, newConn, &newAddr,tempFile)
 			}
 			// end := time.Since(start)
 			// fmt.Println("time taken to send the chunks is ", end)

@@ -17,7 +17,7 @@ type Message struct{
 	ChunkIndex int `json:"chunkIndex"`
 }
 
-func ReceiverServer(){
+func ReceiverServer(senderIp string){
 	var mu sync.Mutex
 	// var fileWriteMutex sync.Mutex
 	addr := net.UDPAddr{
@@ -57,7 +57,7 @@ func ReceiverServer(){
 			for i:=0 ; i< newFile.Metadata.TotalChunks ; i++ {
 				remainChunks[i] = 1
 			}
-			go RequestFile(newFile.Metadata,currentWindow,&mu)
+			go RequestFile(newFile.Metadata,currentWindow,&mu,senderIp)
 		}
 		if(msg.Type =="file-chunk"){
 			
