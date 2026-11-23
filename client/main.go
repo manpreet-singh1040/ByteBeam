@@ -22,28 +22,30 @@ func main() {
 
 	reader := bufio.NewReader(os.Stdin)
 
-	// var receiverIp string
+	var receiverIp string
 	// var receiverPort int
-	var senderIp string
+	// var senderIp string
 	// var senderPort int
 	// var filePathToSend string
 
-	// fmt.Print("Receiver IP: ")
-	// if _, err := fmt.Scan(&receiverIp); err != nil {
-	// 	log.Fatal("Error reading Receiver IP:", err)
-	// }
+	fmt.Print("Receiver IP: ")
+	receiverIp, err = reader.ReadString('\n')
+	if err != nil {
+		log.Fatal("Error reading Receiver IP:", err)
+	}
+	receiverIp = strings.TrimSpace(receiverIp)
 
 	// fmt.Print("Receiver Port: ")
 	// if _, err := fmt.Scan(&receiverPort); err != nil {
 	// 	log.Fatal("Error reading Receiver Port:", err)
 	// }
 
-	fmt.Print("Sender IP: ")
-	senderIp, err = reader.ReadString('\n')
-	if err != nil {
-		log.Fatal("Error reading Sender IP:", err)
-	}
-	senderIp = strings.TrimSpace(senderIp)
+	// fmt.Print("Sender IP: ")
+	// senderIp, err = reader.ReadString('\n')
+	// if err != nil {
+	// 	log.Fatal("Error reading Sender IP:", err)
+	// }
+	// senderIp = strings.TrimSpace(senderIp)
 
 	// fmt.Print("Sender Port: ")
 	// if _, err := fmt.Scan(&senderPort); err != nil {
@@ -58,11 +60,11 @@ func main() {
 	filePathToSend = strings.TrimSpace(filePathToSend)
 
 	fmt.Println("\n----- Input Received -----")
-	// fmt.Println("Receiver IP   :", receiverIp)
+	fmt.Println("Receiver IP   :", receiverIp)
 	// fmt.Println("Receiver Port :", receiverPort)
-	fmt.Println("Sender IP     :", senderIp)
+	// fmt.Println("Sender IP     :", senderIp)
 	// fmt.Println("Sender Port   :", senderPort)
 	fmt.Println("File Path     :", filePathToSend)
 
-	fileShare.FileShare(senderIp, filePathToSend)
+	fileShare.FileShare(receiverIp, filePathToSend)
 }

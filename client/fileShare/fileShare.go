@@ -9,13 +9,13 @@ import(
 	"github.com/manpreet-singh1040/ByteBeam/client/fileHandling"
 )
 
-func FileShare(senderIp string , filePathToSend string){
+func FileShare(recieverIp string , filePathToSend string){
 	fmt.Println("hello from file share package")
 	fmt.Println("hey bud nice work")
 	fmt.Println(filePathToSend)
 	addr := net.UDPAddr{
 		Port: 8080,
-		IP:   net.ParseIP(senderIp),
+		IP:   net.ParseIP(recieverIp),
 	}
 	conn , err := net.DialUDP("udp", nil, &addr)
 	if err != nil {
@@ -41,10 +41,10 @@ func FileShare(senderIp string , filePathToSend string){
 		return
 	}
 	conn.Write(jsonData)
-	ListeningServer(File,senderIp)
+	ListeningServer(File,recieverIp)
 }	
 
-func ListeningServer(File fileHandling.File, senderIp string){
+func ListeningServer(File fileHandling.File, recieverIp string){
 	fmt.Println("hello from listening server")
 	addr := net.UDPAddr{
 		Port: 3000,
@@ -68,7 +68,7 @@ func ListeningServer(File fileHandling.File, senderIp string){
 	}
 	newAddr := net.UDPAddr{
 		Port: 8080,
-		IP:   net.ParseIP(senderIp),
+		IP:   net.ParseIP(recieverIp),
 	}
 
 	newConn , err := net.DialUDP("udp", nil, &newAddr)
